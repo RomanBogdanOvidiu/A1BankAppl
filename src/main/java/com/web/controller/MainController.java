@@ -1,6 +1,7 @@
 package com.web.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,12 +28,14 @@ import org.springframework.web.servlet.ModelAndView;
 import com.users.model.Account;
 import com.users.model.Bills;
 import com.users.model.Client;
+import com.users.model.Report;
 import com.users.model.TransferObject;
 import com.users.model.User;
 import com.users.model.UserRole;
 import com.users.service.AccountService;
 import com.users.service.BillsService;
 import com.users.service.ClientService;
+import com.users.service.ReportService;
 import com.users.service.UserRoleService;
 import com.users.service.UserService;
 
@@ -54,6 +57,9 @@ public class MainController {
 
 	@Autowired
 	protected BillsService billsService;
+
+	@Autowired
+	protected ReportService reportService;
 
 	// private static Logger log =
 	// Logger.getLogger(MainController.class.getName());
@@ -192,6 +198,8 @@ public class MainController {
 
 		Client c = clientService.findById(clientId);
 		a1.setClient(c);
+
+		// a1.setDate(new Date());
 		// c.getAcc().add(a1);
 		// clientService.insert(c);
 		accountService.insert(a1);
@@ -212,17 +220,28 @@ public class MainController {
 		return forSignUp;
 	}
 
+	@Transactional
 	@RequestMapping(value = "/client", method = RequestMethod.POST)
-	public ModelAndView createClient(Client c1) {
-		ModelAndView sucCreated = new ModelAndView();
+	public String createClient(Client c1) {
+
+		Report report = new Report();
 
 		if (c1.getCnp().length() != 13)
-			sucCreated.addObject("error", "CNP MUST BE OF LENGTH 13");
+			return "redirect:/wrong";
 
-		clientService.insert(c1);
+		else {
+
+			org.springframework.security.core.userdetails.User loggedIn = (org.springframework.security.core.userdetails.User) SecurityContextHolder
+					.getContext().getAuthentication().getPrincipal();
+			report.setMessage("Client was created by: " + loggedIn.getUsername());
+			reportService.save(report);
+
+			clientService.insert(c1);
+
+		}
 		// log.info("INFO: Client was created");
-		sucCreated.setViewName("redirect:/clientlist");
-		return sucCreated;
+		// sucCreated.setViewName("redirect:/clientlist");
+		return "redirect:/clientlist";
 	}
 
 	@RequestMapping(value = "/client/edit/{id}", method = RequestMethod.GET)
@@ -231,7 +250,11 @@ public class MainController {
 		forSignUp.addObject("title", "Bank Application");
 		forSignUp.addObject("message", "Create new bank account");
 		Client c1 = clientService.findById(id);
-
+		Report report = new Report();
+		org.springframework.security.core.userdetails.User loggedIn = (org.springframework.security.core.userdetails.User) SecurityContextHolder
+				.getContext().getAuthentication().getPrincipal();
+		report.setMessage("Client was edited by: " + loggedIn.getUsername());
+		reportService.save(report);
 		forSignUp.addObject("client", c1);
 		forSignUp.setViewName("client");
 		return forSignUp;
@@ -251,6 +274,11 @@ public class MainController {
 
 	@RequestMapping(value = "/client/delete/{id}", method = RequestMethod.GET)
 	public String deleteClient(@PathVariable("id") Integer id) {
+		Report report = new Report();
+		org.springframework.security.core.userdetails.User loggedIn = (org.springframework.security.core.userdetails.User) SecurityContextHolder
+				.getContext().getAuthentication().getPrincipal();
+		report.setMessage("Client was deleted by: " + loggedIn.getUsername());
+		reportService.save(report);
 		clientService.deleteById(id);
 		// log.info("INFO: Client was deleted");
 		return "redirect:/clientlist";
@@ -277,6 +305,7 @@ public class MainController {
 		return "/sucCreated";
 
 	}
+
 	@Transactional
 	@RequestMapping(value = "/insuf", method = RequestMethod.GET)
 	public String moneyLess() {
@@ -285,8 +314,20 @@ public class MainController {
 	}
 
 	@Transactional
+	@RequestMapping(value = "/wrong", method = RequestMethod.GET)
+	public String wrong() {
+		return "/wrong";
+
+	}
+
+	@Transactional
 	@RequestMapping(value = "/client/account/delete/{id}", method = RequestMethod.GET)
 	public String deleteAccount(@PathVariable("id") Integer id) {
+		Report report = new Report();
+		org.springframework.security.core.userdetails.User loggedIn = (org.springframework.security.core.userdetails.User) SecurityContextHolder
+				.getContext().getAuthentication().getPrincipal();
+		report.setMessage("Client's account was deleted by: " + loggedIn.getUsername());
+		reportService.save(report);
 		Account acc = accountService.findById(id);
 		Client c = clientService.findById(acc.getClient().getId());
 		List<Account> accs = new ArrayList<Account>();
@@ -308,6 +349,7 @@ public class MainController {
 	@RequestMapping(value = "/client/account/edit/{id}", method = RequestMethod.GET)
 	public ModelAndView editAccount(@PathVariable("id") Integer id) {
 		Account acc = accountService.findById(id);
+		acc.setDate(new Date());
 		ModelAndView model = new ModelAndView();
 		model.addObject("account", acc);
 		model.setViewName("account");
@@ -403,33 +445,35 @@ public class MainController {
 		forBill.addObject("title", "Bank Application");
 		forBill.addObject("message", "Pay your bills");
 
-	//	Client c = clientService.findById(id);
+		// Client c = clientService.findById(id);
 		List<Bills> bill = billsService.findByClientId(id);
 
-		//if (c.getId() == bill.getClientId())
-			// bill.setClient(c);
-			forBill.addObject("bills", bill);
+		// if (c.getId() == bill.getClientId())
+		// bill.setClient(c);
+		forBill.addObject("bills", bill);
 		forBill.setViewName("bills");
 		return forBill;
 	}
-	
+
 	@Transactional
 	@RequestMapping(value = "/paybill/{id}/{clientid}/{billCost}", method = RequestMethod.GET)
-	public String paybill(@PathVariable("id") Integer id,@PathVariable("clientid") Integer clientid, @PathVariable("billCost") Double billCost) {
-		Client c=clientService.findById(clientid);
-		List<Account> accs=new ArrayList<Account>();
-		
+	public String paybill(@PathVariable("id") Integer id, @PathVariable("clientid") Integer clientid,
+			@PathVariable("billCost") Double billCost) {
+		Client c = clientService.findById(clientid);
+		List<Account> accs = new ArrayList<Account>();
+
 		for (Account account : c.getAcc()) {
-			if(account.getAmount()>billCost){
-				account.setAmount(account.getAmount()-billCost); break;
-			}
-			else return "redirect:/insuf";
+			if (account.getAmount() > billCost) {
+				account.setAmount(account.getAmount() - billCost);
+				break;
+			} else
+				return "redirect:/insuf";
 		}
-		Bills bill=billsService.findById(id);
-		int a=clientid;
+		Bills bill = billsService.findById(id);
+		int a = clientid;
 		billsService.deleteBill(bill);
-		
-	
-		return "redirect:/bills/"+a;
+
+		return "redirect:/bills/" + a;
 	}
+
 }

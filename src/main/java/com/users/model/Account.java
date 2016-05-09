@@ -1,5 +1,6 @@
 package com.users.model;
 
+import java.util.Date;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -11,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "account", catalog = "bank")
@@ -28,14 +31,19 @@ public class Account {
 	@ManyToOne
 	@JoinColumn(name = "clientid")
 	private Client client;
+	
+	//@Temporal(TemporalType.DATE)
+//	private Date date;
+	@Column(name = "LAST_MODIFIED")
+	@Temporal(TemporalType.DATE)
+	private Date date;
 
-	private int date;
 
-	public int getDate() {
+	public Date getDate() {
 		return date;
 	}
 
-	public void setDate(int date) {
+	public void setDate(Date date) {
 		this.date = date;
 	}
 

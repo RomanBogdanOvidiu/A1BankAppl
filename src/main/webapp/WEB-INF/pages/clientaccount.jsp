@@ -1,6 +1,7 @@
 <%@taglib prefix="sec"
 	uri="http://www.springframework.org/security/tags"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:import url="/WEB-INF/common/layout.jsp" charEncoding="UTF-8">
     <c:param name="title" value="Account LIST" />
     <c:param name="body">
@@ -22,8 +23,8 @@
                 <tr>
                     <td>${(account.id)}</td>
                     <td>${(account.amount)}</td>
-                    <td>${(account.date)}</td>
-                    <td>${(account.accountNo)}</td>
+                    <td> <fmt:formatDate pattern="yyyy-MM-dd" value="${(account.date)}" /></td>
+            	 <td>${(account.accountNo)}</td>
                     <td>${(account.client.id)}</td>
                     
                     <td><a

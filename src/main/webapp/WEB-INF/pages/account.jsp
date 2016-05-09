@@ -16,11 +16,11 @@
 			<form:input path="amount" cssClass="span3" cssErrorClass="error" />
 		</div>
 
-		<label class="control-label" for="date"><strong>date</strong></label>
+		<!-- <label class="control-label" for="date"><strong>date</strong></label>
 		<div class="controls">
 			<form:input path="date" cssClass="span3" cssErrorClass="error" />
 		</div>
-		
+		 -->
 
 		<input type="submit" class="btn" value="Submit">&nbsp; <a
 			href="${pageContext.request.contextPath}/account/${account.client.id}"></a>
@@ -30,6 +30,7 @@
 			value="${_csrf.token}" />
 
 		<form:hidden path="id" />
+		
 		
 
 	</form:form>

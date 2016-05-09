@@ -10,6 +10,9 @@
         <p>
        
             <a href='${pageContext.request.contextPath}/client' class="btn btn-info">CREATE</a>
+               <a href='${pageContext.request.contextPath}/clientlist/f' class="btn btn-info">Find by CNP</a>
+            
+            
         </p>
         <table
             class="table table-striped table-bordered table-condensed">

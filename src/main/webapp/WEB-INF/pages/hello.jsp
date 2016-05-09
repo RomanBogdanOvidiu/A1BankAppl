@@ -8,7 +8,7 @@
 
 
 
-	<sec:authorize access="hasRole('ROLE_USER') && hasRole('ROLE_ADMIN')">
+	<sec:authorize access="hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')">
 		<!-- For login user -->
 		<c:url value="/logout" var="logoutUrl" />
 		<form action="${logoutUrl}" method="post" id="logoutForm">
